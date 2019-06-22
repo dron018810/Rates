@@ -164,59 +164,57 @@
         </style>
     </head>
     <body>
-        <h1>Rates</h1>
-        	<table border="1">
-                <tr>
-                    <td>
-                    	<a href="javascript:;" id="downloadExchangeRates">Download exchange rates</a>      	
-                    </td>
-                    <td>
-                    	<a href="javascript:;" id="downloadExcelRates">Download Excel</a>
-                    </td>
-                </tr>
-                <tr>
-                	<td>							                   
-                    	<input type="text" name="daterange" value="2019-01-01 - 2019-02-01" />
-						<script>
-							$(function() {
-							  $('input[name="daterange"]').daterangepicker({
-							  	onSelect: function(date) {
-						            alert();
+       	<table border="1">
+               <tr>
+                   <td>
+                   	<a href="javascript:;" id="downloadExchangeRates">Download exchange rates</a>      	
+                   </td>
+                   <td>
+                   	<a href="javascript:;" id="downloadExcelRates">Download Excel</a>
+                   </td>
+               </tr>
+               <tr>
+               	<td>							                   
+                   	<input type="text" name="daterange" value="2019-01-01 - 2019-02-01" />
+					<script>
+						$(function() {
+						  $('input[name="daterange"]').daterangepicker({
+						  	onSelect: function(date) {
+					            alert();
+					        },
+						    opens: 'left',
+						    locale: {
+				    	    	format: 'YYYY-MM-DD'
+				    	    }
+						  });
+						});
+						$('input[name="daterange"]').on('apply.daterangepicker', function (ev, picker) {
+							$.ajax({
+						        type: "POST",
+						        url: "${pageContext.request.contextPath}/applyDaterangepickerAction",
+						        dataType: 'json',
+						        data: {
+						        	daterange : $('input[name="daterange"]').val()
 						        },
-							    opens: 'left',
-							    locale: {
-					    	    	format: 'YYYY-MM-DD'
-					    	    }
-							  });
-							});
-							$('input[name="daterange"]').on('apply.daterangepicker', function (ev, picker) {
-								$.ajax({
-							        type: "POST",
-							        url: "${pageContext.request.contextPath}/applyDaterangepickerAction",
-							        dataType: 'json',
-							        data: {
-							        	daterange : $('input[name="daterange"]').val()
-							        },
-							        success: function(data) {
-							        	buildResultsTable(data);
-							        	buildChart(getDataPointsFromData(data));
-							        },
-							        error: function(data) {
-							            alert("error");
-							        }
-							    });
-							});
-						</script>
-					</td>
-                </tr>
-			</table>
-			
-			<div id="chartContainer" style="height: 370px; width: 100%;"></div>
-			
-			
-			<table border="1" id="results">		
-	                
-	        </table>	         
-        
+						        success: function(data) {
+						        	buildResultsTable(data);
+						        	buildChart(getDataPointsFromData(data));
+						        },
+						        error: function(data) {
+						            alert("error");
+						        }
+						    });
+						});
+					</script>
+				</td>
+               </tr>
+		</table>
+		
+		<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+		
+		
+		<table border="1" id="results">		
+                
+        </table>              
     </body>
 </html>

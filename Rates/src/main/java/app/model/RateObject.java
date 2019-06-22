@@ -23,6 +23,15 @@ public class RateObject {
 	@Column(name = "rate")
 	private double rate;
 	
+	public RateObject() {
+
+	}
+	
+	public RateObject(LocalDate date, double rate) {
+		this.date = date;
+		this.rate = rate;
+	}
+	
 	public Long getId() {
 		return id;
 	}

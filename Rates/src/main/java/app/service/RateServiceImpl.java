@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -47,11 +48,32 @@ public class RateServiceImpl implements RateService {
 	
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static final int DATE_RANGE_LIMIT = 93;
+	private static final LocalDate MIN_DATE = LocalDate.parse("2002-01-01");
+	private static final LocalDate MAX_DATE = LocalDate.now();
 	
 	public List<RateObject> getXmlData(String dateRange) {
 		long startTime = System.nanoTime();
-		LocalDate startDate = LocalDate.parse(dateRange.substring(0, 10), FORMATTER);
+		LocalDate realStartDate = LocalDate.parse(dateRange.substring(0, 10), FORMATTER);
 		LocalDate endDate = LocalDate.parse(dateRange.substring(13, 23), FORMATTER);
+		
+		
+		if(Duration.between(endDate.atStartOfDay(), MAX_DATE.atStartOfDay()).toDays() < 0) {
+			endDate = MAX_DATE;
+		}
+		if(Duration.between(realStartDate.atStartOfDay(), MIN_DATE.atStartOfDay()).toDays() > 0) {
+			realStartDate = MIN_DATE;
+		}
+		
+		LocalDate startDate = realStartDate;
+		int countFakeDays = 0;
+		
+		if(realStartDate.getDayOfWeek() == DayOfWeek.SATURDAY) {
+			startDate = startDate.minusDays(1);	
+			countFakeDays++;
+		} else if(realStartDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+			startDate = startDate.minusDays(2);
+			countFakeDays += 2;
+		}
 		
 		long days = Duration.between(startDate.atStartOfDay(), endDate.atStartOfDay()).toDays();				
 		long requests = days / DATE_RANGE_LIMIT;
@@ -63,8 +85,23 @@ public class RateServiceImpl implements RateService {
 		
 		for(int i = 1; i <= requests; i++) {
 			LocalDate sdate = i == 1 ? startDate : startDate.plusDays(DATE_RANGE_LIMIT * (i - 1) + i - 1);
-			LocalDate edate = i == requests ? endDate : startDate.plusDays(DATE_RANGE_LIMIT * i + (i == 1 ? 0 : i - 1));
+			LocalDate edate;
+			if(i == requests) {
+				edate = endDate;
+			} else {
+				if(Duration.between(startDate.plusDays(DATE_RANGE_LIMIT * i + (i == 1 ? 0 : i - 1)).atStartOfDay(), endDate.atStartOfDay()).toDays() < 0) {
+					edate = endDate;
+					requests--;
+				} else {
+					edate = startDate.plusDays(DATE_RANGE_LIMIT * i + (i == 1 ? 0 : i - 1));
+				}
+			}
 			result.addAll(getXmlData(sdate, edate));
+		}
+		
+		for(int i = 0; i < countFakeDays;) {
+			result.remove(i);
+			countFakeDays--;
 		}
 		
 		long estimatedTime  = System.nanoTime() - startTime;
@@ -100,29 +137,27 @@ public class RateServiceImpl implements RateService {
 	            		if("USD".equals(elementText)) {
 	            			reader.next();
 	            			elementText = reader.getElementText();
-	            			RateObject rateObject = new RateObject();
-	            			
-	            			long lossDatesCount = 0;
+	            			long startDatelossDatesCount = 0;	            			
 	            			LocalDate localDate = LocalDate.parse(date, FORMATTER);
 	            			if(result.size() > 0) {
-		            			RateObject prevResult = result.get(result.size() - 1);		            			
-		            			lossDatesCount = Duration.between(prevResult.getDate().atStartOfDay(), localDate.atStartOfDay()).toDays() - 1;
-		            			for(int i = 1; i <= lossDatesCount; i++) {
-			            			rateObject = new RateObject();
-			            			rateObject.setDate(prevResult.getDate().plusDays(i));
-			            			rateObject.setRate(prevResult.getRate());
-			            			result.add(rateObject);
+		            			RateObject prevResult = result.get(result.size() - 1);
+		            			startDatelossDatesCount = Duration.between(prevResult.getDate().atStartOfDay(), localDate.atStartOfDay()).toDays() - 1;
+		            			for(int i = 1; i <= startDatelossDatesCount; i++) {
+			            			result.add(new RateObject(prevResult.getDate().plusDays(i), prevResult.getRate()));
 			            		} 
-	            			}
-	            			
-	            			rateObject = new RateObject();
-	            			rateObject.setDate(LocalDate.parse(date, FORMATTER));
-	            			rateObject.setRate(Double.parseDouble(elementText));
-	            			result.add(rateObject);
+	            			}	            			
+	            			result.add(new RateObject(LocalDate.parse(date, FORMATTER), Double.parseDouble(elementText)));
 	            		}
 	            	}
 	            }
 	        }
+
+			long endDatelossDatesCount = 0;
+			RateObject lastResult = result.get(result.size() - 1);
+			endDatelossDatesCount = Duration.between(lastResult.getDate().atStartOfDay(), endDate.atStartOfDay()).toDays();
+			for(int i = 1; i <= endDatelossDatesCount; i++) {
+    			result.add(new RateObject(lastResult.getDate().plusDays(i), lastResult.getRate()));
+    		}
 			
 			return result;
 			
