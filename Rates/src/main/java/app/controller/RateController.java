@@ -57,9 +57,8 @@ public class RateController {
 	public String downloadExcelRatesAction(HttpServletRequest request) {
 		String[] dates = request.getParameter("dates").replace("[", "").replace("]", "").replace("\"", "").split(",");
 		String[] rates = request.getParameter("rates").replace("[", "").replace("]", "").replace("\"", "").split(",");
-		
-		String fileName = service.saveExcel(request.getServletContext().getRealPath("/"), dates, rates);
-		
+		request.getSession().getId();
+		String fileName = service.saveExcel(request, dates, rates);		
 		return fileName;
 	}
 	
@@ -70,7 +69,7 @@ public class RateController {
 		InputStream is = new FileInputStream(file);
 
 		response.setContentType("application/vnd.ms-excel");
-	    response.setHeader("Content-Disposition", "attachment; filename=\"" + path);
+	    response.setHeader("Content-Disposition", "attachment; filename=Rates.xls");
 	    FileCopyUtils.copy(is, response.getOutputStream());
 
 	    file.delete();

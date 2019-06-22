@@ -3,6 +3,8 @@ package app.service;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import app.model.RateObject;
 
 public interface RateService {
@@ -19,6 +21,6 @@ public interface RateService {
 	
 	Set<RateObject> getObjectsToSave(String dateRange);
 	
-	String saveExcel(String realPath, String[] dates, String[] rates);
+	String saveExcel(HttpServletRequest request, String[] dates, String[] rates);
 	
 }

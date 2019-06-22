@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -199,7 +200,8 @@ public class RateServiceImpl implements RateService {
 	}
 	
 	@Override
-	public String saveExcel(String realPath, String[] dates, String[] rates) {
+	public String saveExcel(HttpServletRequest request, String[] dates, String[] rates) {
+		String realPath = request.getServletContext().getRealPath("/");
 		Workbook book = new HSSFWorkbook();
 		Sheet sheet = book.createSheet("Rates");
 		Row row = sheet.createRow(0);
@@ -229,7 +231,7 @@ public class RateServiceImpl implements RateService {
 		sheet.autoSizeColumn(0);
 		sheet.autoSizeColumn(1);
 		
-		String filename = "rates.xls";
+		String filename = request.getSession().getId() + "_rates.xls";
         File file = new File(realPath, filename);
 		
 		try {			
