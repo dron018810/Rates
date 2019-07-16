@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -161,12 +163,14 @@ public class RateServiceImpl implements RateService {
     		}
 			
 			return result;
-			
-		} catch (IOException e) {
-			e.printStackTrace();			
+
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
-		} catch (FactoryConfigurationError e) {
+		} catch (ProtocolException e) {
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return Collections.emptyList();
@@ -221,14 +225,13 @@ public class RateServiceImpl implements RateService {
 		for(int i = 1; i <= dates.length; i++) {
 			row = sheet.createRow(i);
 			date = row.createCell(0);
-			date = row.createCell(0);
 			date.setCellStyle(dateStyle);
 			date.setCellValue(dates[i-1]);
 			rate = row.createCell(1);
 			rate.setCellValue(rates[i-1]);
 		}
-		
-		sheet.autoSizeColumn(0);
+
+
 		sheet.autoSizeColumn(1);
 		
 		String filename = request.getSession().getId() + "_rates.xls";
