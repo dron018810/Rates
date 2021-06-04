@@ -13,7 +13,7 @@
 	    <encoding>UTF-8</encoding>
         <spring.version>5.1.7.RELEASE</spring.version>
         <hibernate.version>5.4.3.Final</hibernate.version>
-        <hibernate.validator>6.0.16.Final</hibernate.validator>
+        <hibernate.validator>6.0.20.Final</hibernate.validator>
         <servlets.version>4.0.1</servlets.version>
         <jsp.version>2.3.3</jsp.version>
        	<jstl.version>1.2</jstl.version>
